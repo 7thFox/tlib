@@ -3,28 +3,56 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
+
+	"github.com/jessevdk/go-flags"
 )
 
 const Version = "0.1-alpha"
 
+const (
+	CmdAdd  = "add"
+	CmdInit = "init"
+)
+
+var GlobalOpts GlobalOptions
+
+func Debug(msg string, a ...any) {
+	fmt.Fprintf(os.Stderr, "DEBUG: "+msg+"\n", a...)
+}
+
 func main() {
-	cmd := "help"
-	if len(os.Args) > 1 {
-		cmd = strings.ToLower(os.Args[1])
+	var opts Options
+	p := flags.NewParser(&GlobalOpts, flags.Default)
+
+	if _, err := p.AddCommand(CmdInit, "Initialize a new library", "Initialize a new library", &opts.InitOpts); err != nil {
+		panic(err)
+	}
+	if _, err := p.AddCommand(CmdAdd, "Add books to library", "Add books to library", &opts.AddOpts); err != nil {
+		panic(err)
 	}
 
-	switch cmd {
-	default:
-		fmt.Fprintf(os.Stderr, "Unknown command '%s'\n", cmd)
-		fallthrough
-	case "help":
-		fmt.Println("Usage: tlib [command]")
-		fmt.Println("Commands:")
-		fmt.Println("\t help    \t Print this message")
-		fmt.Println("\t version \t Print tlib version")
-	case "version":
-	case "-v":
-		fmt.Printf("tlib %s\n", Version)
+	p.Parse()
+
+	if p.Active == nil {
+		p.WriteHelp(os.Stdout)
+		return
 	}
+
+	switch p.Active.Name {
+	case CmdAdd:
+		RunAdd(&opts.AddOpts)
+	case CmdInit:
+		RunInit(&opts.InitOpts)
+	default:
+		p.WriteHelp(os.Stdout)
+	}
+}
+
+type GlobalOptions struct {
+	FilePath string `short:"d" long:"dir" description:"Library directory"`
+}
+
+type Options struct {
+	AddOpts  AddOptions
+	InitOpts InitOptions
 }
