@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/jessevdk/go-flags"
@@ -17,7 +16,7 @@ const (
 var GlobalOpts GlobalOptions
 
 func Debug(msg string, a ...any) {
-	fmt.Fprintf(os.Stderr, "DEBUG: "+msg+"\n", a...)
+	// fmt.Fprintf(os.Stderr, "DEBUG: "+msg+"\n", a...)
 }
 
 func main() {

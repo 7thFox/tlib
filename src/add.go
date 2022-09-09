@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strconv"
@@ -10,6 +11,8 @@ import (
 type AddOptions struct {
 	FilePath        string `short:"f" long:"file" description:"File to load multiple books from"`
 	NoImpliedISBN10 bool   `long:"no-implied-isbn10" description:"Disables implied leading 0 for ISBN's with only 9 characters"`
+	StopOnError     bool   `short:"s" long:"stop-on-error" description:"Stops file add after first error"`
+	UseStdin        bool   `long:"stdin" description:"Read from Stdin"`
 
 	Positional struct {
 		ISBN string
@@ -30,7 +33,7 @@ func RunAdd(opts *AddOptions) {
 		}
 	}
 
-	addBook := func(book *LibraryEntryV1) {
+	addBook := func(book *LibraryEntryV1) bool {
 		if book != nil {
 			if isbns[book.ISBN] {
 				fmt.Fprintln(os.Stderr, "ISBN already in library")
@@ -46,14 +49,38 @@ func RunAdd(opts *AddOptions) {
 					addmsg += " - " + book.Title
 				}
 				fmt.Printf("Added %s\n", addmsg)
+				return true
 			}
 		}
+		return false
 	}
 
 	if opts.Positional.ISBN != "" {
 		book := getBook(opts.Positional.ISBN, opts)
 		addBook(book)
-	} else if opts.FilePath == "" {
+	} else if opts.FilePath != "" || opts.UseStdin {
+		var f *os.File
+		if opts.FilePath != "" {
+			f, err := os.Open(opts.FilePath)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Filed to open %s: %s\n", opts.FilePath, err.Error())
+			}
+			defer f.Close()
+		} else {
+			f = os.Stdin
+		}
+
+		s := bufio.NewScanner(f)
+		for s.Scan() {
+			isbn := strings.TrimSpace(strings.SplitN(s.Text(), "#", 2)[0])
+			if isbn != "" {
+				book := getBook(isbn, opts)
+				if !addBook(book) && opts.StopOnError {
+					break
+				}
+			}
+		}
+
 	} else {
 		fmt.Fprintln(os.Stderr, "ISBN or file must be supplied")
 		return
