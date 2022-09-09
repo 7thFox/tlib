@@ -31,6 +31,7 @@ func main() {
 		panic(err)
 	}
 
+	// p.ParseArgs([]string{"add", "9781594037306"})
 	p.Parse()
 
 	if p.Active == nil {
@@ -50,6 +51,7 @@ func main() {
 
 type GlobalOptions struct {
 	FilePath string `short:"d" long:"dir" description:"Library directory"`
+	Pretty   bool   `short:"p" long:"pretty" description:"Write library JSON in human-readable format"`
 }
 
 type Options struct {

@@ -13,7 +13,7 @@ func RunInit(opts *InitOptions) {
 		fmt.Fprintf(os.Stderr, "Library file %s already exists\n", LibraryPath())
 	}
 
-	if err := LibrarySave(&LibraryV1{}); err != nil {
+	if err := LibrarySave(&LibraryV1{SortedBy: SortLCC}); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 	}
 }
