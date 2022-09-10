@@ -1,6 +1,6 @@
 test/
 bin/
 go.sum
-**/tlib.json
+**/*.json
 **/*.txt
 releases/
