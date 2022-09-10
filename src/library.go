@@ -53,14 +53,7 @@ func LibraryExists() bool {
 }
 
 func LibraryPath() string {
-	path := GlobalOpts.FilePath
-	if path == "" {
-		path, _ = os.Getwd()
-	}
-	if path != "" && path[len(path)-1] != '/' {
-		path += "/"
-	}
-	return path + "tlib.json"
+	return GlobalOpts.FilePath
 }
 
 func LibrarySave(lib *LibraryV1) error {

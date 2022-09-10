@@ -3,3 +3,4 @@ bin/
 go.sum
 **/tlib.json
 **/*.txt
+releases/

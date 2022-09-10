@@ -7,11 +7,12 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-const Version = "0.1-alpha"
+const Version = "1.0"
 
 const (
 	CmdAdd   = "add"
 	CmdInit  = "init"
+	CmdMan   = "man"
 	CmdShelf = "shelf"
 )
 
@@ -21,19 +22,32 @@ func main() {
 	var opts Options
 	p := flags.NewParser(&GlobalOpts, flags.Default)
 
-	if _, err := p.AddCommand(CmdInit, "Initialize a new library", "Initialize a new library", &opts.InitOpts); err != nil {
+	p.ShortDescription = "Terminal Library"
+	p.LongDescription = "Light-weight CLI-based library manager utilizing the OpenLibrary API (https://openlibrary.org/)"
+	p.SubcommandsOptional = true // --version doesn't need one
+
+	if _, err := p.AddCommand(CmdInit, "Initialize a new library", "", &opts.InitOpts); err != nil {
 		panic(err)
 	}
-	if _, err := p.AddCommand(CmdAdd, "Add books to library", "Add books to library", &opts.AddOpts); err != nil {
+	if _, err := p.AddCommand(CmdAdd, "Add books to library", "", &opts.AddOpts); err != nil {
 		panic(err)
 	}
-	if _, err := p.AddCommand(CmdShelf, "Print books in shelf order", "Print books in shelf order", &opts.ShelfOpts); err != nil {
+	if _, err := p.AddCommand(CmdShelf, "Print books and other library-wide operations", "", &opts.ShelfOpts); err != nil {
 		panic(err)
 	}
 
-	// p.ParseArgs(strings.Split("shelf --find-all", " "))
-	// GlobalOpts.FilePath = "/home/josh/src/tlib"
+	man, err := p.AddCommand(CmdMan, "Write man page", "", &EmptyOptions{})
+	if err != nil {
+		panic(err)
+	}
+	man.Hidden = true
+
 	p.Parse()
+
+	if GlobalOpts.Version {
+		Print(Version)
+		return
+	}
 
 	if p.Active == nil {
 		p.WriteHelp(os.Stdout)
@@ -45,6 +59,8 @@ func main() {
 		RunAdd(&opts.AddOpts)
 	case CmdInit:
 		RunInit(&opts.InitOpts)
+	case CmdMan:
+		p.WriteManPage(os.Stdout)
 	case CmdShelf:
 		RunShelf(&opts.ShelfOpts)
 	default:
@@ -66,14 +82,15 @@ func Warn(msg string, a ...any) {
 	}
 }
 func Print(msg string, a ...any) {
-	fmt.Fprintf(os.Stderr, msg+"\n", a...)
+	fmt.Printf(msg+"\n", a...)
 }
 
 type GlobalOptions struct {
-	FilePath string `short:"d" long:"dir" description:"Library directory"`
+	FilePath string `long:"lib" description:"Library file path" default:"tlib.json"`
 	Pretty   bool   `short:"p" long:"pretty" description:"Write library JSON in human-readable format"`
 	Debug    bool   `long:"debug" description:"Print debug info"`
 	Quiet    bool   `short:"q" long:"quiet" description:"Only print error messages"`
+	Version  bool   `short:"v" long:"version" description:"Print tlib version"`
 }
 
 type Options struct {
@@ -81,3 +98,5 @@ type Options struct {
 	InitOpts  InitOptions
 	ShelfOpts ShelfOptions
 }
+
+type EmptyOptions struct{}
