@@ -28,10 +28,11 @@ type LibraryV1 struct {
 }
 
 type LibraryEntryV1 struct {
-	ISBN   string `json:"isbn"`
-	LCC    string `json:"lcc"`
-	Title  string `json:"title"`
-	Author string `json:"author"`
+	ISBN10 []string `json:"isbn_10"`
+	ISBN13 []string `json:"isbn_13"`
+	LCC    string   `json:"lcc"`
+	Title  string   `json:"title"`
+	Author string   `json:"author"`
 }
 
 func LibraryLoad() (*LibraryV1, error) {
@@ -66,6 +67,9 @@ func LibraryExists() bool {
 
 func LibraryPath() string {
 	path := GlobalOpts.FilePath
+	if path == "" {
+		path, _ = os.Getwd()
+	}
 	if path != "" && path[len(path)-1] != '/' {
 		path += "/"
 	}
@@ -81,7 +85,7 @@ func LibrarySave(lib *LibraryV1) error {
 	func() {
 		defer func() {
 			if err := recover(); err != nil {
-				fmt.Fprintln(os.Stderr, "Error sorting library: ", err)
+				Error("Error sorting library: ", err)
 			}
 		}()
 		sort.Slice(lib.Entries, lccLessThan(lib))

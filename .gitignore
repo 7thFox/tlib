@@ -2,3 +2,4 @@ test/
 bin/
 go.sum
 **/tlib.json
+**/*.txt

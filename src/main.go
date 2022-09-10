@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/jessevdk/go-flags"
@@ -15,10 +16,6 @@ const (
 
 var GlobalOpts GlobalOptions
 
-func Debug(msg string, a ...any) {
-	// fmt.Fprintf(os.Stderr, "DEBUG: "+msg+"\n", a...)
-}
-
 func main() {
 	var opts Options
 	p := flags.NewParser(&GlobalOpts, flags.Default)
@@ -30,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	// p.ParseArgs([]string{"add", "9781594037306"})
+	// p.ParseArgs(strings.Split("asdf", " "))
 	p.Parse()
 
 	if p.Active == nil {
@@ -48,9 +45,30 @@ func main() {
 	}
 }
 
+func Debug(msg string, a ...any) {
+	if GlobalOpts.Debug {
+		fmt.Fprintf(os.Stderr, "DEBUG: "+msg+"\n", a...)
+	}
+}
+func Error(msg string, a ...any) {
+	fmt.Fprintf(os.Stderr, "ERROR: "+msg+"\n", a...)
+}
+func Warn(msg string, a ...any) {
+	if !GlobalOpts.Quiet {
+		fmt.Fprintf(os.Stderr, "WARN:  "+msg+"\n", a...)
+	}
+}
+func Print(msg string, a ...any) {
+	// if !GlobalOpts.Quiet {
+	fmt.Fprintf(os.Stderr, msg+"\n", a...)
+	// }
+}
+
 type GlobalOptions struct {
 	FilePath string `short:"d" long:"dir" description:"Library directory"`
 	Pretty   bool   `short:"p" long:"pretty" description:"Write library JSON in human-readable format"`
+	Debug    bool   `long:"debug" description:"Print debug info"`
+	Quiet    bool   `short:"q" long:"quiet" description:"Only print error messages"`
 }
 
 type Options struct {
