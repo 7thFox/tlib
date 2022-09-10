@@ -28,10 +28,18 @@ func TestLCCLess(t *testing.T) {
 		LCCTest{"M301.222", "M301.123", false},
 		LCCTest{"M301 AF", "M301 AA", false},
 		LCCTest{"M301 AA", "M301 AF", true},
+
+		LCCTest{"BV5055 .F57 1997", "BV'4639'L45'1991", false},
+		LCCTest{"BV'4639'L45'1991", "BV835.I54 2018", false},
+		LCCTest{"BV5055 .F57 1997", "BV835.I54 2018", false},
+
+		LCCTest{"BV'4639'L45'1991", "BV5055 .F57 1997", true},
+		LCCTest{"BV835.I54 2018", "BV'4639'L45'1991", true},
+		LCCTest{"BV835.I54 2018", "BV5055 .F57 1997", true},
 	}
 
 	for _, test := range tests {
-		t.Logf("'%s' < '%s' => %t", test.LCC1, test.LCC2, test.Result)
+		// t.Logf("'%s' < '%s' => %t", test.LCC1, test.LCC2, test.Result)
 		if lessThan(test.LCC1, test.LCC2) != test.Result {
 			t.Errorf("Failed case '%s' < '%s' => %t", test.LCC1, test.LCC2, test.Result)
 		}

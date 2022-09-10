@@ -118,39 +118,27 @@ func getBook(isbn string, opts *AddOptions) *LibraryEntryV1 {
 		return nil
 	}
 
-	newEntry := LibraryEntryV1{}
 	if len(isbn) == 9 && !opts.NoImpliedISBN10 {
 		Warn("ISBN length of 9 implied leading 0 for ISBN-10")
 		isbn = "0" + isbn
-	}
-
-	if len(isbn) == 10 {
-		newEntry.ISBN10 = []string{isbn}
-	} else if len(isbn) == 13 {
-		newEntry.ISBN13 = []string{isbn}
-	} else {
+	} else if len(isbn) != 10 && len(isbn) != 13 {
 		Warn("Invalid ISBN: %s must be length of 10 or 13 characters", isbn)
 		return nil
 	}
 
 	// OpenLibrary lookup
 	ol, err := OLGetByISBN(isbn)
-	if err != nil {
-		if !GlobalOpts.Quiet {
-			Warn("Failed to find in OpenLibrary: " + err.Error())
-		}
-		// continue
-	} else {
-		newEntry.Title = ol.Title
-		newEntry.Author = ol.ByStatement
-		if len(ol.Classifications.LCClassifications) > 0 {
-			newEntry.LCC = ol.Classifications.LCClassifications[0]
-		} else {
-			Warn("No LC Classification found on OpenLibrary")
-		}
+	if err == nil {
+		return NewLibraryEntry(ol)
+	}
 
-		newEntry.ISBN10 = ol.Identifiers.ISBN_10
-		newEntry.ISBN13 = ol.Identifiers.ISBN_13
+	Warn(err.Error())
+
+	newEntry := LibraryEntryV1{}
+	if len(isbn) == 10 {
+		newEntry.ISBN10 = []string{isbn}
+	} else if len(isbn) == 13 {
+		newEntry.ISBN13 = []string{isbn}
 	}
 
 	return &newEntry

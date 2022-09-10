@@ -10,8 +10,9 @@ import (
 const Version = "0.1-alpha"
 
 const (
-	CmdAdd  = "add"
-	CmdInit = "init"
+	CmdAdd   = "add"
+	CmdInit  = "init"
+	CmdShelf = "shelf"
 )
 
 var GlobalOpts GlobalOptions
@@ -26,8 +27,12 @@ func main() {
 	if _, err := p.AddCommand(CmdAdd, "Add books to library", "Add books to library", &opts.AddOpts); err != nil {
 		panic(err)
 	}
+	if _, err := p.AddCommand(CmdShelf, "Print books in shelf order", "Print books in shelf order", &opts.ShelfOpts); err != nil {
+		panic(err)
+	}
 
-	// p.ParseArgs(strings.Split("asdf", " "))
+	// p.ParseArgs(strings.Split("shelf --find-all", " "))
+	// GlobalOpts.FilePath = "/home/josh/src/tlib"
 	p.Parse()
 
 	if p.Active == nil {
@@ -40,6 +45,8 @@ func main() {
 		RunAdd(&opts.AddOpts)
 	case CmdInit:
 		RunInit(&opts.InitOpts)
+	case CmdShelf:
+		RunShelf(&opts.ShelfOpts)
 	default:
 		p.WriteHelp(os.Stdout)
 	}
@@ -59,9 +66,7 @@ func Warn(msg string, a ...any) {
 	}
 }
 func Print(msg string, a ...any) {
-	// if !GlobalOpts.Quiet {
 	fmt.Fprintf(os.Stderr, msg+"\n", a...)
-	// }
 }
 
 type GlobalOptions struct {
@@ -72,6 +77,7 @@ type GlobalOptions struct {
 }
 
 type Options struct {
-	AddOpts  AddOptions
-	InitOpts InitOptions
+	AddOpts   AddOptions
+	InitOpts  InitOptions
+	ShelfOpts ShelfOptions
 }

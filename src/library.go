@@ -22,19 +22,6 @@ type Library struct {
 	V1 *LibraryV1 `json:"v1"`
 }
 
-type LibraryV1 struct {
-	SortedBy LibrarySort      `json:"sorted_by"`
-	Entries  []LibraryEntryV1 `json:"books"`
-}
-
-type LibraryEntryV1 struct {
-	ISBN10 []string `json:"isbn_10"`
-	ISBN13 []string `json:"isbn_13"`
-	LCC    string   `json:"lcc"`
-	Title  string   `json:"title"`
-	Author string   `json:"author"`
-}
-
 func LibraryLoad() (*LibraryV1, error) {
 	Debug("Loading library from %s", LibraryPath())
 
@@ -112,10 +99,21 @@ func LibrarySave(lib *LibraryV1) error {
 
 func lccLessThan(lib *LibraryV1) func(i, j int) bool {
 	return func(i, j int) bool {
-		lhs := []rune(lib.Entries[i].LCC)
-		rhs := []rune(lib.Entries[j].LCC)
+		le := lib.Entries[i]
+		re := lib.Entries[j]
 
-		if lib.Entries[i].LCC == lib.Entries[j].LCC || len(rhs) == 0 {
+		if le.LCC == re.LCC {
+			if le.Title == "" {
+				return true
+			}
+
+			return le.Author < re.Author
+		}
+
+		lhs := []rune(le.LCC)
+		rhs := []rune(re.LCC)
+
+		if len(rhs) == 0 {
 			return false
 		}
 		if len(lhs) == 0 {
@@ -178,7 +176,7 @@ func lccLessThan(lib *LibraryV1) func(i, j int) bool {
 			rlen := digitLen(ri, rhs)
 
 			ln, _ := strconv.Atoi(string(lhs[li : li+llen]))
-			rn, _ := strconv.Atoi(string(rhs[ri : li+rlen]))
+			rn, _ := strconv.Atoi(string(rhs[ri : ri+rlen]))
 
 			if ln < rn {
 				return true

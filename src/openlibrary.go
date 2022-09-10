@@ -8,6 +8,8 @@ import (
 )
 
 func OLGetByISBN(isbn string) (*OpenLibraryBook, error) {
+	Debug("Searching for ISBN %s on OpenLibrary", isbn)
+
 	resp, err := http.Get("https://openlibrary.org/api/books?bibkeys=ISBN:" + isbn + "&jscmd=data&format=json")
 	defer resp.Body.Close()
 	if err != nil {
@@ -22,6 +24,9 @@ func OLGetByISBN(isbn string) (*OpenLibraryBook, error) {
 		return nil, err
 	}
 
+	d := string(bytes)
+	_ = d
+
 	var value map[string]OpenLibraryBook
 	err = json.Unmarshal(bytes, &value)
 	if err != nil {
@@ -35,13 +40,14 @@ func OLGetByISBN(isbn string) (*OpenLibraryBook, error) {
 }
 
 type OpenLibraryBook struct {
-	Url           string `json:"url"`
-	Title         string `json:"title"`
-	Subtitle      string `json:"subtitle"`
-	ByStatement   string `json:"by_statement"`
-	NumberOfPages uint   `json:"number_of_pages"`
-	Weight        string `json:"weight"`
-	PublishDate   string `json:"publish_date"`
+	Url            string `json:"url"`
+	OpenLibraryKey string `json:"key"`
+	Title          string `json:"title"`
+	Subtitle       string `json:"subtitle"`
+	ByStatement    string `json:"by_statement"`
+	NumberOfPages  uint   `json:"number_of_pages"`
+	Weight         string `json:"weight"`
+	PublishDate    string `json:"publish_date"`
 
 	Authors []struct {
 		Name string `json:"name"`
