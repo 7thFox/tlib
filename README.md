@@ -12,7 +12,6 @@ tlib is a light-weight CLI-based library manager utilizing the OpenLibrary API (
 
 # todo
 - Remove book
-- Allow ISBN-10s to end with -X
 - Validate ISBN checksums
 
 # example usage
