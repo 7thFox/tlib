@@ -7,7 +7,7 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-const Version = "1.0"
+const Version = "1.1"
 
 const (
 	CmdAdd   = "add"
