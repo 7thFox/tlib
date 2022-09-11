@@ -7,6 +7,13 @@ tlib is a light-weight CLI-based library manager utilizing the OpenLibrary API (
 - Easily editable JSON format for book listing
 - List books in shelf order by LCC (Library of Congress Classifiction)
 - List books with missing information not available on OpenLibrary
+- Self-Classification field `self_lcc` for when there's not official classification given (currently only available by editing JSON)
+- Add by OpenLibrary ID for books without an ISBN
+
+# todo
+- Remove book
+- Allow ISBN-10s to end with -X
+- Validate ISBN checksums
 
 # example usage
 
@@ -28,6 +35,9 @@ PS3558.E63 D8 2005   - Dune
 ```
 
 # man page
+
+As of v1.0
+
 ```
 NAME
        tlib - Terminal Library

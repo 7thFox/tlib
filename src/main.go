@@ -42,6 +42,8 @@ func main() {
 	}
 	man.Hidden = true
 
+	// p.ParseArgs(strings.Split("add 9780743496735", " "))
+	// GlobalOpts.FilePath = "/home/josh/src/tlib/tlib.json"
 	p.Parse()
 
 	if GlobalOpts.Version {
@@ -87,10 +89,13 @@ func Print(msg string, a ...any) {
 
 type GlobalOptions struct {
 	FilePath string `long:"lib" description:"Library file path" default:"tlib.json"`
-	Pretty   bool   `short:"p" long:"pretty" description:"Write library JSON in human-readable format"`
 	Debug    bool   `long:"debug" description:"Print debug info"`
 	Quiet    bool   `short:"q" long:"quiet" description:"Only print error messages"`
 	Version  bool   `short:"v" long:"version" description:"Print tlib version"`
+
+	Pretty          bool `short:"p" long:"pretty" description:"Write library JSON in human-readable format"`
+	AlwaysPretty    bool `long:"always-pretty" description:"Update JSON library to always save pretty"`
+	NotAlwaysPretty bool `long:"not-always-pretty" description:"Undo --always-pretty"`
 }
 
 type Options struct {

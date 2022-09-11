@@ -2,21 +2,30 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
 
+func OLGetByOLID(olid string) (*OpenLibraryBook, error) {
+	Debug("Searching for OLID %s on OpenLibrary", olid)
+	return olGet("OLID:" + olid)
+}
+
 func OLGetByISBN(isbn string) (*OpenLibraryBook, error) {
 	Debug("Searching for ISBN %s on OpenLibrary", isbn)
+	return olGet("ISBN:" + isbn)
+}
 
-	resp, err := http.Get("https://openlibrary.org/api/books?bibkeys=ISBN:" + isbn + "&jscmd=data&format=json")
+func olGet(keys string) (*OpenLibraryBook, error) {
+
+	resp, err := http.Get("https://openlibrary.org/api/books?bibkeys=" + keys + "&jscmd=data&format=json")
 	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 	if resp.StatusCode < 200 || resp.StatusCode > 200 {
-		return nil, errors.New("OpenLibrary returned failure response")
+		return nil, fmt.Errorf("OpenLibrary returned failure response for %s", keys)
 	}
 
 	bytes, err := ioutil.ReadAll(resp.Body)
@@ -24,8 +33,8 @@ func OLGetByISBN(isbn string) (*OpenLibraryBook, error) {
 		return nil, err
 	}
 
-	d := string(bytes)
-	_ = d
+	// d := string(bytes)
+	// _ = d
 
 	var value map[string]OpenLibraryBook
 	err = json.Unmarshal(bytes, &value)
@@ -36,7 +45,7 @@ func OLGetByISBN(isbn string) (*OpenLibraryBook, error) {
 	for _, v := range value {
 		return &v, nil
 	}
-	return nil, errors.New("Not Found on OpenLibrary")
+	return nil, fmt.Errorf("%s Not Found on OpenLibrary", keys)
 }
 
 type OpenLibraryBook struct {
@@ -55,11 +64,12 @@ type OpenLibraryBook struct {
 	} `json:"authors"`
 
 	Identifiers struct {
-		ISBN_10   []string `json:"isbn_10"`
-		ISBN_13   []string `json:"isbn_13"`
-		LCCN      []string `json:"lccn"`
-		OCLC      []string `json:"oclc"`
-		Goodreads []string `json:"goodreads"`
+		ISBN_10     []string `json:"isbn_10"`
+		ISBN_13     []string `json:"isbn_13"`
+		LCCN        []string `json:"lccn"`
+		OpenLibrary []string `json:"openlibrary"`
+		OCLC        []string `json:"oclc"`
+		Goodreads   []string `json:"goodreads"`
 	} `json:"identifiers"`
 
 	Classifications struct {

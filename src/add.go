@@ -13,6 +13,8 @@ type AddOptions struct {
 	StopOnError     bool   `short:"s" long:"stop-on-error" description:"Stops file add after first error"`
 	UseStdin        bool   `long:"stdin" description:"Read from Stdin"`
 
+	ByOLID bool `short:"o" long:"olid" description:"Import using OpenLibrary ID (eg OL35693885M)"`
+
 	Positional struct {
 		ISBN string
 	} `positional-args:"true"`
@@ -33,6 +35,13 @@ func RunAdd(opts *AddOptions) {
 		for _, i := range e.ISBN13 {
 			isbns[i] = true
 		}
+	}
+
+	var getBook func(string, *AddOptions) *LibraryEntryV1
+	if opts.ByOLID {
+		getBook = getBookByOLID
+	} else {
+		getBook = getBookByISBN
 	}
 
 	addBook := func(book *LibraryEntryV1, originalISBN string) bool {
@@ -110,15 +119,21 @@ func RunAdd(opts *AddOptions) {
 	}
 }
 
-func getBook(isbn string, opts *AddOptions) *LibraryEntryV1 {
+func getBookByISBN(isbn string, opts *AddOptions) *LibraryEntryV1 {
 	// verify ISBN
 	isbn = strings.ReplaceAll(isbn, "-", "")
-	if _, err := strconv.Atoi(isbn); err != nil {
+
+	isbnToTest := isbn
+	if len(isbn) == 10 && isbn[9] == 'X' {
+		isbnToTest = isbn[0:8]
+	}
+
+	if _, err := strconv.Atoi(isbnToTest); err != nil {
 		Warn("Invalid ISBN: '%s' - Non-numeric value", isbn)
 		return nil
 	}
 
-	if len(isbn) == 9 && !opts.NoImpliedISBN10 {
+	if len(isbn) == 9 && !opts.NoImpliedISBN10 { // 1967 version => ISO 2108
 		Warn("ISBN length of 9 implied leading 0 for ISBN-10")
 		isbn = "0" + isbn
 	} else if len(isbn) != 10 && len(isbn) != 13 {
@@ -142,4 +157,18 @@ func getBook(isbn string, opts *AddOptions) *LibraryEntryV1 {
 	}
 
 	return &newEntry
+}
+
+func getBookByOLID(olid string, opts *AddOptions) *LibraryEntryV1 {
+	// OpenLibrary lookup
+	ol, err := OLGetByOLID(olid)
+	if err == nil {
+		return NewLibraryEntry(ol)
+	}
+
+	Warn(err.Error())
+
+	return &LibraryEntryV1{
+		OLID: olid,
+	}
 }

@@ -34,10 +34,17 @@ func RunShelf(opts *ShelfOptions) {
 }
 
 func shelfFind(lib *LibraryV1, opts *ShelfOptions) {
-
 	for i, e := range lib.Entries {
 		if opts.FindAll || e.LCC == "" || e.Title == "" {
-			ol, err := OLGetByISBN(e.FirstISBN())
+
+			var ol *OpenLibraryBook
+			var err error
+			if e.OLID != "" {
+				ol, err = OLGetByOLID(e.OLID)
+			} else {
+				ol, err = OLGetByISBN(e.FirstISBN())
+			}
+
 			if err != nil {
 				Warn(err.Error())
 				continue
@@ -75,7 +82,7 @@ func shelfPrint(lib *LibraryV1, opts *ShelfOptions) {
 				return false
 			}
 			if e.Title != "" {
-				Print("%-50s %s", e.Title, e.OpenLibraryURL)
+				Print("%-50s https://openlibrary.org/books/%s", e.Title, e.OLID)
 			} else {
 				Print("ISBN: %-44s https://openlibrary.org/books/add", e.FirstISBN())
 			}

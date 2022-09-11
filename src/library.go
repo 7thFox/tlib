@@ -44,6 +44,16 @@ func LibraryLoad() (*LibraryV1, error) {
 		return nil, errors.New("V1 library not available")
 	}
 
+	if lib.V1.SortedBy != SortLCC {
+		return nil, fmt.Errorf("Sort type %s not supported by this version of tlib", lib.V1.SortedBy)
+	}
+
+	if GlobalOpts.AlwaysPretty {
+		lib.V1.AlwaysPretty = true
+	} else if GlobalOpts.NotAlwaysPretty {
+		lib.V1.AlwaysPretty = false
+	}
+
 	return lib.V1, nil
 }
 
@@ -77,7 +87,7 @@ func LibrarySave(lib *LibraryV1) error {
 
 	var data []byte
 	var err error
-	if GlobalOpts.Pretty {
+	if lib.AlwaysPretty || GlobalOpts.Pretty {
 		data, err = json.MarshalIndent(toSave, "", "  ")
 	} else {
 		data, err = json.Marshal(toSave)
@@ -95,7 +105,16 @@ func lccLessThan(lib *LibraryV1) func(i, j int) bool {
 		le := lib.Entries[i]
 		re := lib.Entries[j]
 
-		if le.LCC == re.LCC {
+		llcc := le.LCC
+		rlcc := re.LCC
+		if llcc == "" {
+			llcc = le.SelfClassification
+		}
+		if rlcc == "" {
+			rlcc = le.SelfClassification
+		}
+
+		if llcc == re.LCC {
 			if le.Title == "" {
 				return true
 			}
@@ -103,7 +122,7 @@ func lccLessThan(lib *LibraryV1) func(i, j int) bool {
 			return le.Author < re.Author
 		}
 
-		lhs := []rune(le.LCC)
+		lhs := []rune(llcc)
 		rhs := []rune(re.LCC)
 
 		if len(rhs) == 0 {
