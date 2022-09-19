@@ -11,7 +11,9 @@ tlib is a light-weight CLI-based library manager utilizing the OpenLibrary API (
 - Add by OpenLibrary ID for books without an ISBN
 
 # todo
+- Add "shelved" indicator and list unshelved books with the 1 before/after it
 - Remove book
+- Allow self-classification without manually editing JSON
 - Validate ISBN checksums
 
 # example usage

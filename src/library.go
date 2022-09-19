@@ -111,10 +111,10 @@ func lccLessThan(lib *LibraryV1) func(i, j int) bool {
 			llcc = le.SelfClassification
 		}
 		if rlcc == "" {
-			rlcc = le.SelfClassification
+			rlcc = re.SelfClassification
 		}
 
-		if llcc == re.LCC {
+		if llcc == rlcc {
 			if le.Title == "" {
 				return true
 			}
@@ -123,7 +123,7 @@ func lccLessThan(lib *LibraryV1) func(i, j int) bool {
 		}
 
 		lhs := []rune(llcc)
-		rhs := []rune(re.LCC)
+		rhs := []rune(rlcc)
 
 		if len(rhs) == 0 {
 			return false

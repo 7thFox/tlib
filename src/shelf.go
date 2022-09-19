@@ -67,18 +67,27 @@ func shelfResort(lib *LibraryV1, opts *ShelfOptions) {
 
 func shelfPrint(lib *LibraryV1, opts *ShelfOptions) {
 	var print func(LibraryEntryV1) bool
+
 	if opts.PrintAll {
 		print = func(e LibraryEntryV1) bool {
+			lcc := e.LCC
+			if lcc == "" {
+				lcc = e.SelfClassification
+			}
 			if e.Title != "" {
-				Print("%-20s - %s", e.LCC, e.Title)
+				Print("%-20s - %s", lcc, e.Title)
 			} else {
-				Print("%-20s - ISBN: %s", e.LCC, e.FirstISBN())
+				Print("%-20s - ISBN: %s", lcc, e.FirstISBN())
 			}
 			return true
 		}
 	} else if opts.NoClassification {
 		print = func(e LibraryEntryV1) bool {
-			if e.LCC != "" {
+			lcc := e.LCC
+			if lcc == "" {
+				lcc = e.SelfClassification
+			}
+			if lcc != "" {
 				return false
 			}
 			if e.Title != "" {
@@ -90,7 +99,11 @@ func shelfPrint(lib *LibraryV1, opts *ShelfOptions) {
 		}
 	} else if opts.NoInfo {
 		print = func(e LibraryEntryV1) bool {
-			if e.LCC != "" {
+			lcc := e.LCC
+			if lcc == "" {
+				lcc = e.SelfClassification
+			}
+			if lcc != "" {
 				return false
 			}
 			if e.Title != "" { // technically should check other fields, but Title is kind of the main thing to have
@@ -101,8 +114,12 @@ func shelfPrint(lib *LibraryV1, opts *ShelfOptions) {
 		}
 	} else {
 		print = func(e LibraryEntryV1) bool {
-			if e.LCC != "" && e.Title != "" {
-				Print("%-20s - %s", e.LCC, e.Title)
+			lcc := e.LCC
+			if lcc == "" {
+				lcc = e.SelfClassification
+			}
+			if lcc != "" && e.Title != "" {
+				Print("%-20s - %s", lcc, e.Title)
 			}
 			return true
 		}

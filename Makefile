@@ -1,6 +1,8 @@
 RELEASE_TARGETS := linux/386 linux/amd64 windows/386 windows/amd64
+BUILD_ID := $(shell cat /dev/urandom | od -A n -t x4 | head -c 8 | sed 's/ //')
 
 build:
+	echo "$(BUILD_ID)"
 	go build -o bin/tlib src/*.go
 
 import: build import.txt
@@ -27,5 +29,5 @@ release: build .ONESHELL
 			GOARCH=$(shell echo "$(target)" | cut -d/ -f2) \
 			EXT=$(shell [ "$$(echo "$(target)" | cut -d/ -f1)" == "windows" ] && echo ".exe") \
 			VERSION=$$VERSION \
-			sh -c 'go build -o releases/$$VERSION/tlib-$$GOOS-$$GOARCH$$EXT src/*.go';
+			sh -c 'go build -o releases/$$VERSION/tlib-$$GOOS-$$GOARCH-$(BUILD_ID)$$EXT src/*.go';
 	)
